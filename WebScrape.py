@@ -9,7 +9,6 @@ import json
 
 def get_player_towns_states(url_lst):
 
-    #base_url = 'https://mgoblue.com/sports/mens-basketball/roster'
     tup_lst = []
     for url in url_lst:
         r = requests.get(url)
@@ -47,14 +46,18 @@ def setUpDatabase(db_name):
     return cur, conn
 
 
-#def setUpSportsTable(cur, conn):
+def setUpSportsTable(cur, conn):
+    sports = [('Basketball' , 1), ('Football', 2), ('Hockey', 3)]
+    cur.execute('CREATE TABLE IF NOT EXISTS Sports (sport_id INTEGER, sport_name TEXT)')
+    for sport in sports:
+        cur.execute('INSERT INTO Sports (sport_id, sport_name) VALUES (?, ?)', (sport[1], sport[0]))
+    
+    conn.commit()
 
 
 
 def setUpPlayersTable(tup_lst, cur, conn):
-    cur, conn = setUpDatabase('players.db')
-    cur.execute('DROP TABLE IF EXISTS Players')
-    cur.execute('CREATE TABLE Players (name TEXT, hometown TEXT, homestate TEXT)')
+    cur.execute('CREATE TABLE IF NOT EXISTS Players (name TEXT, hometown TEXT, homestate TEXT)')
     for tup in tup_lst:
         cur.execute('INSERT INTO Players (name, hometown, homestate) VALUES (?, ?, ?)', (tup[0], tup[1], tup[2]))
     
@@ -78,6 +81,7 @@ def main():
     print(get_per_in_state(get_player_towns_states(['https://mgoblue.com/sports/mens-basketball/roster', 'https://mgoblue.com/sports/football/roster', 'https://mgoblue.com/sports/mens-ice-hockey/roster'])))
     cur, conn = setUpDatabase('players.db')
     setUpPlayersTable(get_player_towns_states(['https://mgoblue.com/sports/mens-basketball/roster', 'https://mgoblue.com/sports/football/roster', 'https://mgoblue.com/sports/mens-ice-hockey/roster']), cur, conn)
+    setUpSportsTable(cur, conn)
     write_data_to_file("Players.txt", cur, conn)
 
     
