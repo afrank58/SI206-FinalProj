@@ -28,13 +28,13 @@ def get_player_towns_states(tup_lst):
 
 
 
-def get_per_in_state(tup_lst):
-    states = []
-    for tup in tup_lst:
-        states.append(tup[3])
-    num_in_state = states.count('Mich.')
-    per_in_state = num_in_state / len(tup_lst)
-    return per_in_state
+#def get_per_in_state(tup_lst):
+    #states = []
+    #for tup in tup_lst:
+        #states.append(tup[3])
+    #num_in_state = states.count('Mich.')
+    #per_in_state = num_in_state / len(tup_lst)
+    #return per_in_state
 
 
 
@@ -64,6 +64,18 @@ def setUpPlayersTable(tup_lst, cur, conn):
     
     conn.commit()
 
+def get_per_in_state(cur, conn):
+    states_list = []
+    cur.execute('SELECT homestate FROM Players')
+    states = cur.fetchall()
+    for state in states:
+        states_list.append(state)
+
+    num_in_state = states_list.count('Mich.')
+    per_in_state = num_in_state / len(states_list)
+
+    return per_in_state
+
 
 
 
@@ -71,8 +83,8 @@ def write_data_to_file(filename, cur, conn):
     path = os.path.dirname(os.path.abspath(__file__)) + os.sep
     outFile = open(path + filename, "w")
 
-    percentage = get_per_in_state(get_player_towns_states([('Basketball', 'https://mgoblue.com/sports/mens-basketball/roster'), ('Football', 'https://mgoblue.com/sports/football/roster'), ('Hockey', 'https://mgoblue.com/sports/mens-ice-hockey/roster')]))
-
+    #percentage = get_per_in_state(get_player_towns_states([('Basketball', 'https://mgoblue.com/sports/mens-basketball/roster'), ('Football', 'https://mgoblue.com/sports/football/roster'), ('Hockey', 'https://mgoblue.com/sports/mens-ice-hockey/roster')]))
+    percentage = get_per_in_state(cur, conn)
     outFile.write("Percentage of athletes that are from Michigan on the Men's Basketball, Football, and Hockey Teams. \n")
     outFile.write(str(percentage) + " of Michigan Men's Backetball, Football, and Hockey players are from the state of Michigan. \n")
     outFile.close()
@@ -83,7 +95,7 @@ def main():
     list_tups = [('Basketball', 'https://mgoblue.com/sports/mens-basketball/roster'), ('Football', 'https://mgoblue.com/sports/football/roster'), ('Hockey', 'https://mgoblue.com/sports/mens-ice-hockey/roster')]
     print(get_player_towns_states([('Basketball', 'https://mgoblue.com/sports/mens-basketball/roster'), ('Football', 'https://mgoblue.com/sports/football/roster'), ('Hockey', 'https://mgoblue.com/sports/mens-ice-hockey/roster')]))
     print(len(get_player_towns_states([('Basketball', 'https://mgoblue.com/sports/mens-basketball/roster'), ('Football', 'https://mgoblue.com/sports/football/roster'), ('Hockey', 'https://mgoblue.com/sports/mens-ice-hockey/roster')])))
-    print(get_per_in_state(get_player_towns_states([('Basketball', 'https://mgoblue.com/sports/mens-basketball/roster'), ('Football', 'https://mgoblue.com/sports/football/roster'), ('Hockey', 'https://mgoblue.com/sports/mens-ice-hockey/roster')])))
+    #print(get_per_in_state(get_player_towns_states([('Basketball', 'https://mgoblue.com/sports/mens-basketball/roster'), ('Football', 'https://mgoblue.com/sports/football/roster'), ('Hockey', 'https://mgoblue.com/sports/mens-ice-hockey/roster')])))
 
 
     cur, conn = setUpDatabase('players.db')
@@ -91,7 +103,7 @@ def main():
 
     setUpPlayersTable(get_player_towns_states(list_tups), cur, conn)
     write_data_to_file("Players.txt", cur, conn)
-
+    print(get_per_in_state(cur, conn))
     
     conn.close()
 
