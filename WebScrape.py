@@ -158,8 +158,6 @@ def counting_in_state_players(in_state_tup_list):
 def write_data_to_file(filename, cur, conn):
     path = os.path.dirname(os.path.abspath(__file__)) + os.sep
     outFile = open(path + filename, "w")
-
-    #percentage = get_per_in_state(get_player_towns_states([('Basketball', 'https://mgoblue.com/sports/mens-basketball/roster'), ('Football', 'https://mgoblue.com/sports/football/roster'), ('Hockey', 'https://mgoblue.com/sports/mens-ice-hockey/roster')]))
     percentage = get_per_in_state(cur, conn)
     outFile.write("Percentage of athletes that are from Michigan on the Men's Basketball, Football, and Hockey Teams. \n")
     outFile.write(str(percentage) + " of Michigan Men's Basketball, Football, and Hockey players are from the state of Michigan. \n")
@@ -218,12 +216,6 @@ def main():
     plt.title("Number of In State Players on the \n" + "Michigan Men's Basketball, Football, and Hockey Teams")
     plt.show()
 
-    # fig = plt.figure()
-    # ax = fig.add_axes([0,0,1,1])
-    # sports = ["Basketball", "Football", "Hockey"]
-    # number_of_players = [7, 35, 9]
-    # ax.bar(sports, number_of_players)
-    # plt.show()
 
 
 
