@@ -1,3 +1,4 @@
+import matplotlib
 import matplotlib.pyplot as plt
 from bs4 import BeautifulSoup
 import requests
@@ -58,16 +59,6 @@ def get_hockey_players_in_state(in_state_tup_list):
 
 
 
-def get_per_in_state(tup_lst):
-    states = []
-    for tup in tup_lst:
-        states.append(tup[3])
-    num_in_state = states.count('Mich.')
-    per_in_state = num_in_state / len(tup_lst)
-    return per_in_state
-
-
-
 def setUpDatabase(db_name):
     path = os.path.dirname(os.path.abspath(__file__))
     conn = sqlite3.connect(path+'/'+db_name)
@@ -87,10 +78,15 @@ def setUpSportsTable(cur, conn):
 
 def setUpPlayersTable(tup_lst, cur, conn):
     cur.execute('CREATE TABLE IF NOT EXISTS Players (sport_id TEXT, name TEXT, hometown TEXT, homestate TEXT)')
-    for tup in tup_lst:
-        cur.execute('SELECT sport_id FROM Sports WHERE sport_name =?', (tup[0],))
+    for x in range (0, 25):
+        cur.execute('SELECT * FROM Players')
+        lst = cur.fetchall()
+        length = len(lst)
+        if length == 158:
+            break
+        cur.execute('SELECT sport_id FROM Sports WHERE sport_name =?', (tup_lst[length][0],))
         sport_id = cur.fetchone()[0]
-        cur.execute('INSERT INTO Players (sport_id, name, hometown, homestate) VALUES (?, ?, ?, ?)', (sport_id, tup[1], tup[2], tup[3]))
+        cur.execute('INSERT INTO Players (sport_id, name, hometown, homestate) VALUES (?, ?, ?, ?)', (sport_id, tup_lst[length][1], tup_lst[length][2], tup_lst[length][3]))
     
     conn.commit()
 
@@ -126,27 +122,43 @@ def setUpInStateHockeyTable(in_state_hockey_players, cur, conn):
     conn.commit()
 
 
-#def get_per_in_state(cur, conn):
-    #states_list = []
-    #cur.execute('SELECT homestate FROM Players')
-    #states = cur.fetchall()
-    #for state in states:
-    #    states_list.append(state)
+def get_per_in_state(cur, conn):
+    states_list = []
+    cur.execute('SELECT homestate FROM Players')
+    states = cur.fetchall()
+    for state in states:
+        states_list.append(state)
+    count = 0 
+    for tup in states:
+        if tup[0] == "Mich.":
+            count += 1
+    per_in_state = count / len(states_list)
 
-    #num_in_state = states_list.count('Mich.')
-    #per_in_state = num_in_state / len(states_list)
+    return per_in_state
 
-    #return per_in_state
-
-
+def counting_in_state_players(in_state_tup_list):
+    d = {}
+    basketball = [] 
+    football = []
+    hockey = [] 
+    for tup in in_state_tup_list:
+        if 'Basketball' in tup:
+            basketball.append(tup)
+        if 'Football' in tup:
+            football.append(tup)
+        if 'Hockey' in tup:
+            hockey.append(tup)
+    d['Basketball'] = len(basketball)
+    d['Football'] = len(football)
+    d['Hockey'] = len(hockey)
+    print(d)
+    return d 
 
 
 def write_data_to_file(filename, cur, conn):
     path = os.path.dirname(os.path.abspath(__file__)) + os.sep
     outFile = open(path + filename, "w")
-
-    percentage = get_per_in_state(get_player_towns_states([('Basketball', 'https://mgoblue.com/sports/mens-basketball/roster'), ('Football', 'https://mgoblue.com/sports/football/roster'), ('Hockey', 'https://mgoblue.com/sports/mens-ice-hockey/roster')]))
-    #percentage = get_per_in_state(cur, conn)
+    percentage = get_per_in_state(cur, conn)
     outFile.write("Percentage of athletes that are from Michigan on the Men's Basketball, Football, and Hockey Teams. \n")
     outFile.write(str(percentage) + " of Michigan Men's Basketball, Football, and Hockey players are from the state of Michigan. \n")
     outFile.close()
@@ -155,14 +167,15 @@ def write_data_to_file(filename, cur, conn):
 
 def main():
     list_tups = [('Basketball', 'https://mgoblue.com/sports/mens-basketball/roster'), ('Football', 'https://mgoblue.com/sports/football/roster'), ('Hockey', 'https://mgoblue.com/sports/mens-ice-hockey/roster')]
-    print(get_player_towns_states([('Basketball', 'https://mgoblue.com/sports/mens-basketball/roster'), ('Football', 'https://mgoblue.com/sports/football/roster'), ('Hockey', 'https://mgoblue.com/sports/mens-ice-hockey/roster')]))
-    print(len(get_player_towns_states([('Basketball', 'https://mgoblue.com/sports/mens-basketball/roster'), ('Football', 'https://mgoblue.com/sports/football/roster'), ('Hockey', 'https://mgoblue.com/sports/mens-ice-hockey/roster')])))
-    print(get_players_in_state(get_player_towns_states(list_tups)))
-    print(get_basketball_players_in_state(get_players_in_state(get_player_towns_states(list_tups))))
-    print(get_football_players_in_state(get_players_in_state(get_player_towns_states(list_tups))))
-    print(get_hockey_players_in_state(get_players_in_state(get_player_towns_states(list_tups))))
-    print(get_per_in_state(get_player_towns_states([('Basketball', 'https://mgoblue.com/sports/mens-basketball/roster'), ('Football', 'https://mgoblue.com/sports/football/roster'), ('Hockey', 'https://mgoblue.com/sports/mens-ice-hockey/roster')])))
-
+    #print(get_player_towns_states([('Basketball', 'https://mgoblue.com/sports/mens-basketball/roster'), ('Football', 'https://mgoblue.com/sports/football/roster'), ('Hockey', 'https://mgoblue.com/sports/mens-ice-hockey/roster')]))
+    #print(len(get_player_towns_states([('Basketball', 'https://mgoblue.com/sports/mens-basketball/roster'), ('Football', 'https://mgoblue.com/sports/football/roster'), ('Hockey', 'https://mgoblue.com/sports/mens-ice-hockey/roster')])))
+    #print(get_players_in_state(get_player_towns_states(list_tups)))
+    #print(get_basketball_players_in_state(get_players_in_state(get_player_towns_states(list_tups))))
+    #print(get_football_players_in_state(get_players_in_state(get_player_towns_states(list_tups))))
+    #print(get_hockey_players_in_state(get_players_in_state(get_player_towns_states(list_tups))))
+    #print(get_per_in_state(get_player_towns_states([('Basketball', 'https://mgoblue.com/sports/mens-basketball/roster'), ('Football', 'https://mgoblue.com/sports/football/roster'), ('Hockey', 'https://mgoblue.com/sports/mens-ice-hockey/roster')])))
+   
+    counting_in_state_players(get_players_in_state(get_player_towns_states(list_tups)))
 
     cur, conn = setUpDatabase('players.db')
     setUpSportsTable(cur, conn)
@@ -174,23 +187,35 @@ def main():
     setUpInStateHockeyTable(get_hockey_players_in_state(get_players_in_state(get_player_towns_states(list_tups))), cur, conn)
 
     write_data_to_file("Players.txt", cur, conn)
-    #print(get_per_in_state(cur, conn))
+
+    cur.execute('SELECT * FROM Players')
+    lst = cur.fetchall()
+    length = len(lst)
+    if length == 158:
+        print(get_per_in_state(cur, conn))
     
     conn.close()
 
-    #making pie# Data to plot
+    #making pie chart 
     labels = ['In State Players', 'Out of State Players']
     sizes = [32.28, 67.72]
-    colors = ['blue', 'yellow']
+    colors = ['lightblue', 'yellow']
     explode = (0.1, 0)  # explode 1st slice
-    
-    # Plot
     plt.pie(sizes, explode = explode, labels=labels, colors=colors,
     autopct='%1.1f%%', startangle=140)
     plt.title("Percentage of UMich Men's Basketball, Football, and Hockey Players \n" + "that are from in state versus out of state")
-    
     plt.axis('equal')
     plt.show()  
+
+
+    #bar graph for in state players 
+    names = ['Basketball', 'Football', 'Hockey']
+    values = [7, 35, 9]
+    plt.bar(names,values)
+    plt.ylabel("Number of Players")
+    plt.title("Number of In State Players on the \n" + "Michigan Men's Basketball, Football, and Hockey Teams")
+    plt.show()
+
 
 
 
