@@ -92,22 +92,40 @@ def get_data(tup_lst, cur, conn):
 def calc_avg_followers(cur, conn):
     cur.execute("SELECT player_id, follower_count FROM Michigan_Twitter_Data")
     players = cur.fetchall()
-    lst_followers = []
-    for idx in range(len(players) + 1):
-        if players[idx][0] == players[idx+1][0]:
-            lst_followers.append(players[idx][1])
-    print(lst_followers)
+    
+    #lst_followers = []
+
+    follower_dict = {}
+    for tup in players:
+
+        player_id = tup[0]
+        follower_count = tup[1]
+
+        if player_id not in follower_dict:
+            follower_dict[player_id] = []
+        follower_dict[player_id].append(follower_count)
+    
+    avg_dict = {}
+    for key in follower_dict:
+        total = sum(follower_dict[key])
+        avg = total/(len(follower_dict[key]))
+        avg_dict[key] = avg
+    #print(avg_dict)
+    return avg_dict
+
+
+   
             
-def write_data_to_file(filename, cur, conn):
-    path = os.path.dirname(os.path.abspath(__file__)) + os.sep
-    outFile = open(path + filename, "w")
+#def write_data_to_file(filename, cur, conn):
+   # path = os.path.dirname(os.path.abspath(__file__)) + os.sep
+   # outFile = open(path + filename, "w")
 
     #need for loop here bc otherwise won't be able to get every player_id
 
-    avg_followers = calc_avg_followers(cur, conn)
-    outFile.write("Average amount of followers a Twitter user that Tweets about each Michigan athlete on Football, Hockey, and Basketball teams. \n")
-    outFile.write(f"{str(avg_followers)} of a Twitter user that Tweets about player with a player id = {player_id}. \n") 
-    outFile.close()
+    #avg_followers = calc_avg_followers(cur, conn)
+    #outFile.write("Average amount of followers a Twitter user that Tweets about each Michigan athlete on Football, Hockey, and Basketball teams. \n")
+    #outFile.write(f"{str(avg_followers)} of a Twitter user that Tweets about player with a player id = {player_id}. \n") 
+    #outFile.close()
 
 
    
@@ -122,17 +140,17 @@ def main():
     #make scatterplot 
 
     #need some type of for loop here to access everything 
-    player_ids = 
-    avg_follower_count = 
+    #player_ids = 
+    #avg_follower_count = 
 
-    plt.scatter(player_ids, avg_follower_count)
+   # plt.scatter(player_ids, avg_follower_count)
 
     # change colors? and do figure size?
 
-    plt.xlabel("Michigan Player ID")
-    plt.ylabel("Average Twitter Followers of User Tweeting")
-    plt.title("Average Amount of Followers of a Twitter User that Tweets About \n" + "Michigan Men's Football, Hockey, and Basketball Players")
-    plt.show()
+   # plt.xlabel("Michigan Player ID")
+   # plt.ylabel("Average Twitter Followers of User Tweeting")
+   # plt.title("Average Amount of Followers of a Twitter User that Tweets About \n" + "Michigan Men's Football, Hockey, and Basketball Players")
+   # plt.show()
     
     
 
