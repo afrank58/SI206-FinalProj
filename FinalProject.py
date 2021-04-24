@@ -2,6 +2,7 @@ import requests
 import json
 import tweepy 
 import sqlite3	
+import matplotlib.pyplot as plt
 import csv		
 import os
 #from bball import get_data 
@@ -97,7 +98,16 @@ def calc_avg_followers(cur, conn):
             lst_followers.append(players[idx][1])
     print(lst_followers)
             
+def write_data_to_file(filename, cur, conn):
+    path = os.path.dirname(os.path.abspath(__file__)) + os.sep
+    outFile = open(path + filename, "w")
 
+    #need for loop here bc otherwise won't be able to get every player_id
+
+    avg_followers = calc_avg_followers(cur, conn)
+    outFile.write("Average amount of followers a Twitter user that Tweets about each Michigan athlete on Football, Hockey, and Basketball teams. \n")
+    outFile.write(f"{str(avg_followers)} of a Twitter user that Tweets about player with a player id = {player_id}. \n") 
+    outFile.close()
 
 
    
@@ -108,10 +118,21 @@ def main():
     get_data(get_data_lst(cur, conn), cur, conn)
     get_data_lst(cur, conn)
     calc_avg_followers(cur, conn)
-    
-    
-    
-   
+
+    #make scatterplot 
+
+    #need some type of for loop here to access everything 
+    player_ids = 
+    avg_follower_count = 
+
+    plt.scatter(player_ids, avg_follower_count)
+
+    # change colors? and do figure size?
+
+    plt.xlabel("Michigan Player ID")
+    plt.ylabel("Average Twitter Followers of User Tweeting")
+    plt.title("Average Amount of Followers of a Twitter User that Tweets About \n" + "Michigan Men's Football, Hockey, and Basketball Players")
+    plt.show()
     
     
 
