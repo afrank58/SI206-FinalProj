@@ -8,6 +8,8 @@ import csv
 import sqlite3
 import json
 
+
+
 def get_player_towns_states(tup_lst):
 
     final_tup_lst = []
@@ -27,35 +29,14 @@ def get_player_towns_states(tup_lst):
 
     return final_tup_lst 
 
+
+
 def get_players_in_state(tup_list):
     in_state_players = []
     for tup in tup_list:
         if tup[3] == "Mich.":
             in_state_players.append(tup)
     return in_state_players 
-
-def get_basketball_players_in_state(in_state_tup_list):
-    in_state_basketball_players = []
-    for tup in in_state_tup_list:
-        if tup[0] == "Basketball":
-            in_state_basketball_players.append(tup)
-    return in_state_basketball_players
-
-
-def get_football_players_in_state(in_state_tup_list):
-    in_state_football_players = []
-    for tup in in_state_tup_list:
-        if tup[0] == "Football":
-            in_state_football_players.append(tup)
-    return in_state_football_players
-
-
-def get_hockey_players_in_state(in_state_tup_list):
-    in_state_hockey_players = []
-    for tup in in_state_tup_list:
-        if tup[0] == "Hockey":
-            in_state_hockey_players.append(tup)
-    return in_state_hockey_players
 
 
 
@@ -64,6 +45,7 @@ def setUpDatabase(db_name):
     conn = sqlite3.connect(path+'/'+db_name)
     cur = conn.cursor()
     return cur, conn
+
 
 
 def setUpSportsTable(cur, conn):
@@ -91,36 +73,6 @@ def setUpPlayersTable(tup_lst, cur, conn):
     conn.commit()
 
 
-def setUpInStateBaskbetballTable(in_state_basketball_players, cur, conn):
-    cur.execute('CREATE TABLE IF NOT EXISTS Basketball_In_State (sport_id TEXT, name TEXT, hometown TEXT, homestate TEXT)')
-    for tup in in_state_basketball_players:
-        cur.execute('SELECT sport_id FROM Sports WHERE sport_name =?', (tup[0],))
-        sport_id = cur.fetchone()[0]
-        cur.execute('INSERT INTO Basketball_In_State (sport_id, name, hometown, homestate) VALUES (?, ?, ?, ?)', (sport_id, tup[1], tup[2], tup[3]))
-    
-    conn.commit()
-
-
-def setUpInStateFootballTable(in_state_football_players, cur, conn):
-    cur.execute('CREATE TABLE IF NOT EXISTS Football_In_State (sport_id TEXT, name TEXT, hometown TEXT, homestate TEXT)')
-    for tup in in_state_football_players:
-        cur.execute('SELECT sport_id FROM Sports WHERE sport_name =?', (tup[0],))
-        sport_id = cur.fetchone()[0]
-        cur.execute('INSERT INTO Football_In_State (sport_id, name, hometown, homestate) VALUES (?, ?, ?, ?)', (sport_id, tup[1], tup[2], tup[3]))
-    
-    conn.commit()
-
-
-
-def setUpInStateHockeyTable(in_state_hockey_players, cur, conn):
-    cur.execute('CREATE TABLE IF NOT EXISTS Hockey_In_State (sport_id TEXT, name TEXT, hometown TEXT, homestate TEXT)')
-    for tup in in_state_hockey_players:
-        cur.execute('SELECT sport_id FROM Sports WHERE sport_name =?', (tup[0],))
-        sport_id = cur.fetchone()[0]
-        cur.execute('INSERT INTO Hockey_In_State (sport_id, name, hometown, homestate) VALUES (?, ?, ?, ?)', (sport_id, tup[1], tup[2], tup[3]))
-    
-    conn.commit()
-
 
 def get_per_in_state(cur, conn):
     states_list = []
@@ -135,6 +87,8 @@ def get_per_in_state(cur, conn):
     per_in_state = count / len(states_list)
 
     return per_in_state
+
+
 
 def counting_in_state_players(in_state_tup_list):
     d = {}
@@ -155,25 +109,25 @@ def counting_in_state_players(in_state_tup_list):
     return d 
 
 
+
 def write_data_to_file(filename, cur, conn):
     path = os.path.dirname(os.path.abspath(__file__)) + os.sep
     outFile = open(path + filename, "w")
     percentage = get_per_in_state(cur, conn)
-    outFile.write("Percentage of athletes that are from Michigan on the Men's Basketball, Football, and Hockey Teams. \n")
+    outFile.write("Percentage of athletes that are from Michigan on the Men's Basketball, Football, and Hockey Teams: \n")
     outFile.write(str(percentage) + " of Michigan Men's Basketball, Football, and Hockey players are from the state of Michigan. \n")
+    outFile.write('\n')
+    outFile.write('Number of in state players on each of the three teams: \n')
+    list_tups = [('Basketball', 'https://mgoblue.com/sports/mens-basketball/roster'), ('Football', 'https://mgoblue.com/sports/football/roster'), ('Hockey', 'https://mgoblue.com/sports/mens-ice-hockey/roster')]
+    d =  counting_in_state_players(get_players_in_state(get_player_towns_states(list_tups)))
+    for team in d:
+        outFile.write(f"There are {str(d[team])} in state players on the {team} team.\n")
     outFile.close()
 
 
 
 def main():
     list_tups = [('Basketball', 'https://mgoblue.com/sports/mens-basketball/roster'), ('Football', 'https://mgoblue.com/sports/football/roster'), ('Hockey', 'https://mgoblue.com/sports/mens-ice-hockey/roster')]
-    #print(get_player_towns_states([('Basketball', 'https://mgoblue.com/sports/mens-basketball/roster'), ('Football', 'https://mgoblue.com/sports/football/roster'), ('Hockey', 'https://mgoblue.com/sports/mens-ice-hockey/roster')]))
-    #print(len(get_player_towns_states([('Basketball', 'https://mgoblue.com/sports/mens-basketball/roster'), ('Football', 'https://mgoblue.com/sports/football/roster'), ('Hockey', 'https://mgoblue.com/sports/mens-ice-hockey/roster')])))
-    #print(get_players_in_state(get_player_towns_states(list_tups)))
-    #print(get_basketball_players_in_state(get_players_in_state(get_player_towns_states(list_tups))))
-    #print(get_football_players_in_state(get_players_in_state(get_player_towns_states(list_tups))))
-    #print(get_hockey_players_in_state(get_players_in_state(get_player_towns_states(list_tups))))
-    #print(get_per_in_state(get_player_towns_states([('Basketball', 'https://mgoblue.com/sports/mens-basketball/roster'), ('Football', 'https://mgoblue.com/sports/football/roster'), ('Hockey', 'https://mgoblue.com/sports/mens-ice-hockey/roster')])))
    
     counting_in_state_players(get_players_in_state(get_player_towns_states(list_tups)))
 
@@ -182,17 +136,14 @@ def main():
 
     setUpPlayersTable(get_player_towns_states(list_tups), cur, conn)
 
-    setUpInStateBaskbetballTable(get_basketball_players_in_state(get_players_in_state(get_player_towns_states(list_tups))), cur, conn)
-    setUpInStateFootballTable(get_football_players_in_state(get_players_in_state(get_player_towns_states(list_tups))), cur, conn)
-    setUpInStateHockeyTable(get_hockey_players_in_state(get_players_in_state(get_player_towns_states(list_tups))), cur, conn)
 
-    write_data_to_file("Players.txt", cur, conn)
 
     cur.execute('SELECT * FROM Players')
     lst = cur.fetchall()
     length = len(lst)
     if length == 158:
         print(get_per_in_state(cur, conn))
+        write_data_to_file("Players.txt", cur, conn)
     
     conn.close()
 
