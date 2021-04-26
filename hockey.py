@@ -241,7 +241,7 @@ def main():
     and includes the code for the bar graph visualization.'''
 
     
-    cur, conn = setUpDatabase('Wolverines_Years.db')
+    cur, conn = setUpDatabase('players.db')
     
     setUpYearsTable(accumulate_data(get_hockey_data(), get_basketball_data(), get_football_data()), cur, conn)
 
