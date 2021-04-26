@@ -2,7 +2,9 @@ import requests
 import json
 import tweepy 
 import sqlite3	
-import matplotlib.pyplot as plt
+import plotly.graph_objects as go
+import plotly.express as px
+import numpy as np
 import csv		
 import os
 #from bball import get_data 
@@ -25,17 +27,24 @@ api = tweepy.API(auth, parser=tweepy.parsers.JSONParser(), wait_on_rate_limit=Tr
 #url = 'https://api.twitter.com/2/tweets'
 
 def setUpDatabase(db_name):
+    """Takes the name of a database, a string, as input. Returns the cursor connection to 
+    the database."""
+
     path = os.path.dirname(os.path.abspath(__file__))
     conn = sqlite3.connect(path+'/'+db_name)
     cur = conn.cursor()
     return cur, conn
 
 def get_data_lst(cur, conn):
+     """Takes in the database cursor and connection as an input. Gets a list of names from 
+    the Player database. Returns a list of tuples of athlete name, Twitter user ID, 
+    and the user's follower count."""
+
     cur.execute('SELECT name FROM Players') 
     
     #this will be swithced to player_id and then select from player_id
 
-    existing_player_names = cur.fetchall()
+    existing_player_names = cur.fetchall() #list of tuples
     lst_names = []
     for item in existing_player_names:
         lst_names.append(item[0])
@@ -56,6 +65,10 @@ def get_data_lst(cur, conn):
     
     
 def set_up_athlete_table(cur, conn):
+    """Takes in the database cursor and connection as inputs. Returns nothing. Creates the
+    Player_ID table and fills it with the player names and their player_ids. The player_id
+    are unique identification numbers for each player."""
+
     cur.execute('CREATE TABLE IF NOT EXISTS Player_ID (player_id INTEGER, name TEXT)')
     cur.execute('SELECT name FROM Players')
     players_name_tup = cur.fetchall()
@@ -75,8 +88,10 @@ def set_up_athlete_table(cur, conn):
 
 
 def get_data(tup_lst, cur, conn):
-    """This function takes in a players name from the database as a parameter and returns a dictionary with the amount of followers each Tweeter 
-    that mentions that athletes name has"""
+     """This function takes in a the list of tuples returned in get_data_lst, the database 
+    cursor, and the database connection as inputs. Returns nothing. Creates the 
+    Michigan_Twitter_Data table and fills it with the player_id, user_id of a Twitter user 
+    that Tweets about that athlete, and that user's follower count."""
 
     cur.execute('CREATE TABLE IF NOT EXISTS Michigan_Twitter_Data (player_id INTEGER, user_id INTEGER, follower_count INTEGER)')
     #cur.execute('SELECT name FROM Players') 
@@ -90,6 +105,9 @@ def get_data(tup_lst, cur, conn):
         conn.commit()
 
 def calc_avg_followers(cur, conn):
+    """Takes in the database cursor and connection as inputs. Returns a dictionary of 
+    player_ids as the key and the average follower count for a user that Tweets about them."""
+
     cur.execute("SELECT player_id, follower_count FROM Michigan_Twitter_Data")
     players = cur.fetchall()
     
@@ -110,47 +128,67 @@ def calc_avg_followers(cur, conn):
         total = sum(follower_dict[key])
         avg = total/(len(follower_dict[key]))
         avg_dict[key] = avg
-    #print(avg_dict)
+    print(avg_dict)
     return avg_dict
 
 
    
             
-#def write_data_to_file(filename, cur, conn):
-   # path = os.path.dirname(os.path.abspath(__file__)) + os.sep
-   # outFile = open(path + filename, "w")
+def write_data_to_file(filename, cur, conn):
+     """Takes in a filename (string), the database cursor, and the database connection
+    as inputs. Returns nothing. Creates a file and writes the return values of the 
+    calc_avg_followers function to the file."""
+
+    path = os.path.dirname(os.path.abspath(__file__)) + os.sep
+    outFile = open(path + filename, "w")
 
     #need for loop here bc otherwise won't be able to get every player_id
 
-    #avg_followers = calc_avg_followers(cur, conn)
-    #outFile.write("Average amount of followers a Twitter user that Tweets about each Michigan athlete on Football, Hockey, and Basketball teams. \n")
-    #outFile.write(f"{str(avg_followers)} of a Twitter user that Tweets about player with a player id = {player_id}. \n") 
-    #outFile.close()
+    avg_followers = calc_avg_followers(cur, conn)
+
+    for item in avg_followers:
+        outFile.write(f" The average amount of followers of a Twitter user that Tweets about the Michigan athlete with a player id = {str(item)} is {str(avg_followers[item])}. \n")
+    
+    outFile.close()
 
 
    
     
 def main():
+    """Takes nothing as input and returns nothing. Calls the functions setUpDatabase(),
+    set_up_athlete_table(), get_data(), get_data_lst(), calc_avg_followers(), 
+    write_data_to_file() and includes the code for the scatterplot visualization graph."""
+    
     cur, conn = setUpDatabase('players.db')
     set_up_athlete_table(cur, conn)
     get_data(get_data_lst(cur, conn), cur, conn)
     get_data_lst(cur, conn)
-    calc_avg_followers(cur, conn)
+    calc_dictionary = calc_avg_followers(cur, conn)
+    write_data_to_file("AverageFollowers.txt", cur, conn)
+
+    keys = []
+    players = []
+    for item in calc_dictionary:
+        keys.append(item)
+        players.append(calc_dictionary[item])
 
     #make scatterplot 
 
-    #need some type of for loop here to access everything 
-    #player_ids = 
-    #avg_follower_count = 
+    fig2 = go.Figure()
+    fig2.add_trace(go.Scatter(
+        x = keys,
+        y = players,
+        marker = dict(color="rgb(55, 83, 109)", size=12),
+        mode = 'markers',
+        name = 'Average Followers',
+     ))
 
-   # plt.scatter(player_ids, avg_follower_count)
+    fig2.update_layout(title = "Average Amount of Followers of a Twitter User that Tweets About Michigan Men's Football, Hockey, and Basketball Players",
+    xaxis_title = "Michigan Player ID", yaxis_title = "Average Twitter Followers of User Tweeting")
 
-    # change colors? and do figure size?
+    fig2.show()
 
-   # plt.xlabel("Michigan Player ID")
-   # plt.ylabel("Average Twitter Followers of User Tweeting")
-   # plt.title("Average Amount of Followers of a Twitter User that Tweets About \n" + "Michigan Men's Football, Hockey, and Basketball Players")
-   # plt.show()
+    
     
     
 
