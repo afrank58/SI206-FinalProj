@@ -36,7 +36,7 @@ def setUpDatabase(db_name):
     return cur, conn
 
 def get_data_lst(cur, conn):
-     """Takes in the database cursor and connection as an input. Gets a list of names from 
+    """Takes in the database cursor and connection as an input. Gets a list of names from 
     the Player database. Returns a list of tuples of athlete name, Twitter user ID, 
     and the user's follower count."""
 
@@ -88,7 +88,7 @@ def set_up_athlete_table(cur, conn):
 
 
 def get_data(tup_lst, cur, conn):
-     """This function takes in a the list of tuples returned in get_data_lst, the database 
+    """This function takes in a the list of tuples returned in get_data_lst, the database 
     cursor, and the database connection as inputs. Returns nothing. Creates the 
     Michigan_Twitter_Data table and fills it with the player_id, user_id of a Twitter user 
     that Tweets about that athlete, and that user's follower count."""
@@ -135,7 +135,7 @@ def calc_avg_followers(cur, conn):
    
             
 def write_data_to_file(filename, cur, conn):
-     """Takes in a filename (string), the database cursor, and the database connection
+    """Takes in a filename (string), the database cursor, and the database connection
     as inputs. Returns nothing. Creates a file and writes the return values of the 
     calc_avg_followers function to the file."""
 
